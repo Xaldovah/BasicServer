@@ -9,21 +9,30 @@ app.wsgi_app = ProxyFix(
 )
 
 WEATHER_API_KEY = '814ff9aed0f8900a97ae0832af2cd3a4'
-GEOLOCATION_API_KEY = 'f188689a3c6b4a8c976fa00150cf7ce4'
+GEOLOCATION_API_KEY = '08c4338545ac84'
+
+def get_client_ip():
+    # Retrieve IP address from headers or fallback to remote address
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0]
+    print(f"Client IP: {client_ip}")
+    return client_ip
+
 
 @app.route('/api/hello')
 def hello():
     visitor_name = request.args.get('visitor_name', 'visitor')
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-    print(client_ip)
+    client_ip = get_client_ip()
 
-    geo_response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={GEOLOCATION_API_KEY}')
+    # Use the ipinfo.io API to get location data
+    geo_response = requests.get(f'https://ipinfo.io/{client_ip}?token={GEOLOCATION_API_KEY}')
     geo_data = geo_response.json()
+    print("Geolocation API Response:", geo_data)
     city = geo_data.get('city', 'Unknown')
-    print(city)
 
+    # Use the OpenWeatherMap API to get weather data
     weather_response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric')
     weather_data = weather_response.json()
+    print("Weather API Response:", weather_data)
 
     if weather_data.get('main'):
         temperature = weather_data['main']['temp']
