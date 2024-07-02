@@ -5,7 +5,6 @@ import requests
 app = Flask(__name__)
 
 
-GEOLOCATION_API_KEY = '1748adbe49b6bd2a45bbd274e237f99a'
 WEATHER_API_KEY = '814ff9aed0f8900a97ae0832af2cd3a4'
 
 
@@ -14,11 +13,9 @@ def hello():
     visitor_name = request.args.get('visitor_name', 'visitor')
     client_ip = request.remote_addr
 
-    geo_response = requests.get(f'http://api.ipstack.com/{client_ip}?access_key={GEOLOCATION_API_KEY}')
+    geo_response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey=f188689a3c6b4a8c976fa00150cf7ce4')
     geo_data = geo_response.json()
-    print(geo_data)
     city = geo_data.get('city')
-    print(city)
 
     weather_response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric')
     weather_data = weather_response.json()
