@@ -1,0 +1,35 @@
+from flask import Flask, request, jsonify
+import requests
+
+
+app = Flask(__name__)
+
+
+GEOLOCATION_API_KEY = '08c4338545ac84'
+WEATHER_API_KEY = '814ff9aed0f8900a97ae0832af2cd3a4'
+
+
+@app.route('/api/hello')
+def hello():
+    visitor_name = request.args.get('visitor_name', 'visitor')
+    client_ip = request.remote_addr
+
+    geo_response = requests.get(f'http://ipinfo.io/{client_ip}/json?token={GEOLOCATION_API_KEY}')
+    geo_data = geo_response.json()
+    city = geo_data.get('city', 'Unknown')
+
+    weather_response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric')
+    weather_data = weather_response.json()
+    temperature = weather_data['main']['temp']
+
+    greeting = f"Hello, {visitor_name}!, the temperature is {temperature} degrees Celsius in {city}"
+
+    return jsonify({
+        "client_ip": client_ip,
+        "location": city,
+        "greeting": greeting
+    })
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
